@@ -2,46 +2,72 @@ require('dotenv').config();
 const inquirer = require('inquirer');
 const { evmTransfer } = require('./evmTransfer');
 const { cosmosTransfer } = require('./cosmosTransfer');
+const { evmToCosmosTransfer } = require('./evmToCosmosTransfer');
+const { cosmosToEvmTransfer } = require('./cosmosToEvmTransfer');
 
+// 🟩 EVM → EVM
 const evmPairs = [
   { name: 'Sepolia → Holesky', from: 'sepolia', to: 'holesky' },
   { name: 'Holesky → Sepolia', from: 'holesky', to: 'sepolia' }
 ];
 
+// 🟦 Cosmos → Cosmos
 const cosmosPairs = [
-  { name: 'Holesky → Babylon', from: 'holesky', to: 'babylon' },
   { name: 'Babylon → Holesky', from: 'babylon', to: 'holesky' },
-  { name: 'Holesky → Xion', from: 'holesky', to: 'xion' },
-  { name: 'Sei → BSC', from: 'sei', to: 'bsc' }
+  { name: 'Sei → BSC', from: 'sei', to: 'bsc' },
+  { name: 'Xion → Sei', from: 'xion', to: 'sei' }
+];
+
+// 🟨 EVM → Cosmos
+const evmToCosmosPairs = [
+  { name: 'Holesky → Babylon', from: 'holesky', to: 'babylon' },
+  { name: 'Sepolia → Xion', from: 'sepolia', to: 'xion' },
+  { name: 'Sepolia → Sei', from: 'sepolia', to: 'sei' }
+];
+
+// 🟥 Cosmos → EVM
+const cosmosToEvmPairs = [
+  { name: 'Babylon → Sepolia', from: 'babylon', to: 'sepolia' },
+  { name: 'Sei → Holesky', from: 'sei', to: 'holesky' },
+  { name: 'Xion → Sepolia', from: 'xion', to: 'sepolia' }
 ];
 
 async function main() {
   console.clear();
   console.log("🌉 UNIONWAY MULTICHAIN BOT\n");
 
-  const allOptions = [...evmPairs, ...cosmosPairs, { name: 'Keluar', exit: true }];
+  const allChoices = [
+    { type: 'separator', line: '=== EVM ke EVM ===' },
+    ...evmPairs.map(p => ({ name: p.name, value: () => evmTransfer(p.from, p.to) })),
+
+    { type: 'separator', line: '=== Cosmos ke Cosmos ===' },
+    ...cosmosPairs.map(p => ({ name: p.name, value: () => cosmosTransfer(p.from, p.to) })),
+
+    { type: 'separator', line: '=== EVM ke Cosmos ===' },
+    ...evmToCosmosPairs.map(p => ({ name: p.name, value: () => evmToCosmosTransfer(p.from, p.to) })),
+
+    { type: 'separator', line: '=== Cosmos ke EVM ===' },
+    ...cosmosToEvmPairs.map(p => ({ name: p.name, value: () => cosmosToEvmTransfer(p.from, p.to) })),
+
+    { type: 'separator' },
+    { name: '❌ Keluar', value: null }
+  ];
+
   const { selected } = await inquirer.prompt([
     {
       type: 'list',
       name: 'selected',
       message: 'Pilih jalur transfer:',
-      choices: allOptions.map(opt => opt.name)
+      choices: allChoices
     }
   ]);
 
-  const pair = allOptions.find(opt => opt.name === selected);
-  if (!pair || pair.exit) {
+  if (!selected) {
     console.log("👋 Keluar.");
     return;
   }
 
-  const isEvm = evmPairs.includes(pair);
-  if (isEvm) {
-    await evmTransfer(pair.from, pair.to);
-  } else {
-    await cosmosTransfer(pair.from, pair.to);
-  }
-
+  await selected();
   console.log("\n✅ Selesai!\n");
 }
 
