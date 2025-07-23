@@ -1,32 +1,23 @@
 module.exports = {
-  sei: {
-    rpc: "https://sei-rpc.polkachu.com",
-    prefix: "sei",
-    denom: "usei",
-    address: "sei1receiverwallet..."
-  },
   babylon: {
-    rpc: "https://rpc.babylonchain.io",
-    prefix: "bby",
-    denom: "ubbn",
-    address: "bby1receiverwallet..."
+    rpc: 'https://rpc.babylonchain.io',
+    prefix: 'bby',
+    denom: 'ubbn',
+    address: 'bby1yourwallethere',
+    bridgeContract: '0xYourBridgeContractOnHolesky'
+  },
+  sei: {
+    rpc: 'https://rpc.sei.io',
+    prefix: 'sei',
+    denom: 'usei',
+    address: 'sei1youraddress',
+    bridgeContract: '0xBridgeForSeiIfAny'
   },
   xion: {
-    rpc: "https://xion-rpc.polkachu.com",
-    prefix: "xion",
-    denom: "uxion",
-    address: "xion1receiverwallet..."
-  },
-  bsc: {
-    rpc: "https://bsc.publicnode.com",
-    prefix: "bnb",
-    denom: "ubnb",
-    address: "bnb1receiverwallet..." // bisa juga pakai alamat EVM
-  },
-  holesky: {
-    rpc: "https://ethereum-holesky.publicnode.com",
-    prefix: "eth",
-    denom: "wei",
-    address: "0xEVMReceiverOnHolesky"
+    rpc: 'https://rpc.xion.network',
+    prefix: 'xion',
+    denom: 'uxion',
+    address: 'xion1youraddress',
+    bridgeContract: '0xBridgeForXionIfAny'
   }
 };
