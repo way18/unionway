@@ -1,0 +1,15 @@
+{
+  "name": "unionway-multichain",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "@cosmjs/proto-signing": "^0.31.0",
+    "@cosmjs/stargate": "^0.31.0",
+    "dotenv": "^16.0.3",
+    "ethers": "^6.7.0",
+    "inquirer": "^9.0.0"
+  }
+}
