@@ -12,9 +12,19 @@ async function cosmosTransfer(from, to) {
     return;
   }
 
-  const mnemonic = process.env[from.toUpperCase() + '_MNEMONIC'];
+  const envKey = (from || '').trim().toUpperCase() + '_MNEMONIC';
+  const mnemonic = process.env[envKey];
+
+  // DEBUGGING
+  console.log('====================');
+  console.log('FROM:', from);
+  console.log('TO:', to);
+  console.log('ENV KEY:', envKey);
+  console.log('MNEMONIC DETECTED:', mnemonic ? '[✅]' : '[❌]');
+  console.log('====================');
+
   if (!mnemonic) {
-    console.error(`❌ Mnemonic untuk ${from} belum diset di .env`);
+    console.error(`❌ Mnemonic untuk ${from} belum diset di .env (dicoba baca dari ${envKey})`);
     return;
   }
 
