@@ -1,7 +1,7 @@
 require('dotenv').config();
-const { ethers } = require("ethers");
-const cosmosChains = require('./config/cosmosChains');
+const { ethers } = require('ethers');
 const evmChains = require('./config/evmChains');
+const cosmosChains = require('./config/cosmosChains');
 
 async function evmToCosmosTransfer(from, to) {
   const sender = evmChains[from];
@@ -18,22 +18,29 @@ async function evmToCosmosTransfer(from, to) {
     return;
   }
 
-  const amount = process.env.EVM_AMOUNT || "0.0001";
+  const bridgeAddress = recipient.bridgeContract;
+  if (!bridgeAddress || !ethers.isAddress(bridgeAddress)) {
+    console.error(`❌ Alamat bridge contract untuk ${to} tidak valid`);
+    return;
+  }
+
+  const provider = new ethers.JsonRpcProvider(sender.rpc);
+  const wallet = new ethers.Wallet(privateKey, provider);
+
+  const value = ethers.parseUnits(process.env.EVM_AMOUNT || '0.000001', 'ether');
+
+  const memo = recipient.address || "bby1dummyaddresshere";
+
+  const tx = {
+    to: bridgeAddress,
+    value,
+    data: ethers.hexlify(ethers.toUtf8Bytes(memo))
+  };
 
   try {
-    const provider = new ethers.JsonRpcProvider(sender.rpc);
-    const wallet = new ethers.Wallet(privateKey, provider);
-
-    console.log(`🚀 Mengirim ${amount} ETH dari ${wallet.address} ke ${recipient.address}...`);
-
-    const tx = await wallet.sendTransaction({
-      to: recipient.address,
-      value: ethers.parseEther(amount)
-    });
-
-    console.log(`⏳ TX Terkirim: ${tx.hash}`);
-    await tx.wait();
-    console.log(`✅ Transfer berhasil! TX Hash: ${tx.hash}`);
+    console.log(`🚀 Mengirim ${value} ETH dari ${wallet.address} ke bridge ${bridgeAddress} dengan memo: ${memo}`);
+    const response = await wallet.sendTransaction(tx);
+    console.log(`✅ Transfer berhasil! TX Hash: ${response.hash}`);
   } catch (err) {
     console.error("❌ Gagal transfer EVM ke Cosmos:", err.message);
   }
