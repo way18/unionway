@@ -5,60 +5,43 @@ const { cosmosTransfer } = require('./cosmosTransfer');
 const { evmToCosmosTransfer } = require('./evmToCosmosTransfer');
 const { cosmosToEvmTransfer } = require('./cosmosToEvmTransfer');
 
-// 🟩 EVM → EVM
-const evmPairs = [
-  { name: 'Sepolia → Holesky', from: 'sepolia', to: 'holesky' },
-  { name: 'Holesky → Sepolia', from: 'holesky', to: 'sepolia' }
-];
+// 🔀 Semua pairing digabung jadi satu list
+const allPairs = [
+  // Prioritas tampil di atas
+  { name: '🔥 Holesky → Babylon', handler: () => evmToCosmosTransfer('holesky', 'babylon') },
 
-// 🟦 Cosmos → Cosmos
-const cosmosPairs = [
-  { name: 'Babylon → Holesky', from: 'babylon', to: 'holesky' },
-  { name: 'Sei → BSC', from: 'sei', to: 'bsc' },
-  { name: 'Xion → Sei', from: 'xion', to: 'sei' }
-];
+  // EVM ↔ EVM
+  { name: 'Sepolia → Holesky', handler: () => evmTransfer('sepolia', 'holesky') },
+  { name: 'Holesky → Sepolia', handler: () => evmTransfer('holesky', 'sepolia') },
 
-// 🟨 EVM → Cosmos
-const evmToCosmosPairs = [
-  { name: 'Holesky → Babylon', from: 'holesky', to: 'babylon' },
-  { name: 'Sepolia → Xion', from: 'sepolia', to: 'xion' },
-  { name: 'Sepolia → Sei', from: 'sepolia', to: 'sei' }
-];
+  // Cosmos ↔ Cosmos
+  { name: 'Babylon → Holesky', handler: () => cosmosTransfer('babylon', 'holesky') },
+  { name: 'Sei → BSC', handler: () => cosmosTransfer('sei', 'bsc') },
+  { name: 'Xion → Sei', handler: () => cosmosTransfer('xion', 'sei') },
 
-// 🟥 Cosmos → EVM
-const cosmosToEvmPairs = [
-  { name: 'Babylon → Sepolia', from: 'babylon', to: 'sepolia' },
-  { name: 'Sei → Holesky', from: 'sei', to: 'holesky' },
-  { name: 'Xion → Sepolia', from: 'xion', to: 'sepolia' }
+  // EVM → Cosmos
+  { name: 'Sepolia → Xion', handler: () => evmToCosmosTransfer('sepolia', 'xion') },
+  { name: 'Sepolia → Sei', handler: () => evmToCosmosTransfer('sepolia', 'sei') },
+
+  // Cosmos → EVM
+  { name: 'Babylon → Sepolia', handler: () => cosmosToEvmTransfer('babylon', 'sepolia') },
+  { name: 'Sei → Holesky', handler: () => cosmosToEvmTransfer('sei', 'holesky') },
+  { name: 'Xion → Sepolia', handler: () => cosmosToEvmTransfer('xion', 'sepolia') }
 ];
 
 async function main() {
   console.clear();
   console.log("🌉 UNIONWAY MULTICHAIN BOT\n");
 
-  const allChoices = [
-    { type: 'separator', line: '=== EVM ke EVM ===' },
-    ...evmPairs.map(p => ({ name: p.name, value: () => evmTransfer(p.from, p.to) })),
-
-    { type: 'separator', line: '=== Cosmos ke Cosmos ===' },
-    ...cosmosPairs.map(p => ({ name: p.name, value: () => cosmosTransfer(p.from, p.to) })),
-
-    { type: 'separator', line: '=== EVM ke Cosmos ===' },
-    ...evmToCosmosPairs.map(p => ({ name: p.name, value: () => evmToCosmosTransfer(p.from, p.to) })),
-
-    { type: 'separator', line: '=== Cosmos ke EVM ===' },
-    ...cosmosToEvmPairs.map(p => ({ name: p.name, value: () => cosmosToEvmTransfer(p.from, p.to) })),
-
-    { type: 'separator' },
-    { name: '❌ Keluar', value: null }
-  ];
-
   const { selected } = await inquirer.prompt([
     {
       type: 'list',
       name: 'selected',
       message: 'Pilih jalur transfer:',
-      choices: allChoices
+      choices: [
+        ...allPairs.map(p => ({ name: p.name, value: p.handler })),
+        { name: '❌ Keluar', value: null }
+      ]
     }
   ]);
 
