@@ -28,7 +28,6 @@ async function evmToCosmosTransfer(from, to) {
   const wallet = new ethers.Wallet(privateKey, provider);
 
   const value = ethers.parseUnits(process.env.EVM_AMOUNT || '0.000001', 'ether');
-
   const memo = recipient.address || "bby1dummyaddresshere";
 
   const tx = {
