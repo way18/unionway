@@ -1,25 +1,48 @@
 require('dotenv').config();
-const { transferETH } = require('./transfer');
 const inquirer = require('inquirer');
+const { evmTransfer } = require('./evmTransfer');
+const { cosmosTransfer } = require('./cosmosTransfer');
+
+const evmPairs = [
+  { name: 'Sepolia → Holesky', from: 'sepolia', to: 'holesky' },
+  { name: 'Holesky → Sepolia', from: 'holesky', to: 'sepolia' }
+];
+
+const cosmosPairs = [
+  { name: 'Holesky → Babylon', from: 'holesky', to: 'babylon' },
+  { name: 'Babylon → Holesky', from: 'babylon', to: 'holesky' },
+  { name: 'Holesky → Xion', from: 'holesky', to: 'xion' },
+  { name: 'Sei → BSC', from: 'sei', to: 'bsc' }
+];
 
 async function main() {
   console.clear();
-  console.log("🌉 UNION Autobot CLI (Safe Version)");
-  const answer = await inquirer.prompt([
+  console.log("🌉 UNIONWAY MULTICHAIN BOT\n");
+
+  const allOptions = [...evmPairs, ...cosmosPairs, { name: 'Keluar', exit: true }];
+  const { selected } = await inquirer.prompt([
     {
       type: 'list',
-      name: 'action',
-      message: 'Pilih aksi:',
-      choices: ['Transfer Sepolia → Holesky (ETH)', 'Keluar'],
+      name: 'selected',
+      message: 'Pilih jalur transfer:',
+      choices: allOptions.map(opt => opt.name)
     }
   ]);
 
-  if (answer.action.includes('Transfer')) {
-    await transferETH();
-  } else {
+  const pair = allOptions.find(opt => opt.name === selected);
+  if (!pair || pair.exit) {
     console.log("👋 Keluar.");
-    process.exit(0);
+    return;
   }
+
+  const isEvm = evmPairs.includes(pair);
+  if (isEvm) {
+    await evmTransfer(pair.from, pair.to);
+  } else {
+    await cosmosTransfer(pair.from, pair.to);
+  }
+
+  console.log("\n✅ Selesai!\n");
 }
 
 main();
